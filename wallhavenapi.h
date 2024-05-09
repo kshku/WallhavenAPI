@@ -8,7 +8,8 @@ typedef enum
 {
     WALLHAVEN_OK,
     WALLHAVEN_CURL_FAIL,
-    WALLHAVEN_FAIL
+    WALLHAVEN_FAIL,
+    WALLHAVEN_NO_API_KEY,
 } WallhavenCode;
 
 // Struct to store the response
@@ -39,5 +40,14 @@ WallhavenCode wallhaven_wallpaper_info_tofile(WallhavenAPI *wa, const char *id, 
 WallhavenCode wallhaven_tag_info(WallhavenAPI *wa, const char *id, Response *response);
 // Write tag info to a file
 WallhavenCode wallhaven_tag_info_tofile(WallhavenAPI *wa, const char *id, FILE *file);
+
+// Get user settings
+// Should set the apikey before this using wallhaven_apikey
+// Write it to Response
+WallhavenCode wallhaven_get_user_settings(WallhavenAPI *wa, Response *response);
+// Get user settings
+// Should set the apikey before this using wallhaven_apikey
+// Write it to a file
+WallhavenCode wallhaven_get_user_settings_tofile(WallhavenAPI *wa, FILE *file);
 
 #endif
