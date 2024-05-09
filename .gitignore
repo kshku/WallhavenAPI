@@ -1,4 +1,2 @@
-test
-test.c
+test*
 build_and_run.sh
-test.json

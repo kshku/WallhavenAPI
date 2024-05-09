@@ -35,4 +35,9 @@ WallhavenCode wallhaven_wallpaper_info(WallhavenAPI *wa, const char *id, Respons
 // Write wallpaper info to a file
 WallhavenCode wallhaven_wallpaper_info_tofile(WallhavenAPI *wa, const char *id, FILE *file);
 
+// Write tag info to Response
+WallhavenCode wallhaven_tag_info(WallhavenAPI *wa, const char *id, Response *response);
+// Write tag info to a file
+WallhavenCode wallhaven_tag_info_tofile(WallhavenAPI *wa, const char *id, FILE *file);
+
 #endif
