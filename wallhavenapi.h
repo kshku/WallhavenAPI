@@ -1,6 +1,8 @@
 #ifndef WALLHAVEN_API_H
 #define WALLHAVEN_API_H
 
+// NOTE: Read api before using. API LINk: https://wallhaven.cc/help/api
+
 #include <stdio.h>
 
 // Color names are from https://colors.artyclick.com/color-name-finder/
@@ -34,35 +36,17 @@
 #define White "ffffff"
 #define GunPowder "424153"
 
-// Write wallpaper info to Response
-#define wallhaven_wallpaper_info(wallhaven_api, id, response) \
-    wallhaven_write_to_response(wallhaven_api, response);     \
-    wallhaven_get_result(wa, WALLPAPER_INFO, id)
-// Write wallpaper info to a file
-#define wallhaven_wallpaper_info_tofile(wallhaven_api, id, file) \
-    wallhaven_write_to_file(wallhaven_api, file);                \
+// Get wallpaper info
+#define wallhaven_wallpaper_info(wallhaven_api, id) \
     wallhaven_get_result(wa, WALLPAPER_INFO, id)
 
-// Write tag info to Response
-#define wallhaven_tag_info(wallhaven_api, id, response)   \
-    wallhaven_write_to_response(wallhaven_api, response); \
-    wallhaven_get_result(wa, TAG_INFO, id)
-// Write tag info to a file
-#define wallhaven_tag_info_tofile(wallhaven_api, id, file) \
-    wallhaven_write_to_file(wallhaven_api, file);          \
+// Get tag info
+#define wallhaven_tag_info(wallhaven_api, id) \
     wallhaven_get_result(wa, TAG_INFO, id)
 
 // Get user settings
 // Should set the apikey before this using wallhaven_apikey
-// Write it to Response
-#define wallhaven_get_user_settings(wallhaven_api, response) \
-    wallhaven_write_to_response(wallhaven_api, response);    \
-    wallhaven_get_result(wa, SETTINGS, NULL)
-// Get user settings
-// Should set the apikey before this using wallhaven_apikey
-// Write it to a file
-#define wallhaven_get_user_settings_tofile(wallhaven_api, file) \
-    wallhaven_write_to_file(wallhaven_api, file);               \
+#define wallhaven_user_settings(wallhaven_api) \
     wallhaven_get_result(wa, SETTINGS, NULL)
 
 // Error codes returned by functions
@@ -72,6 +56,12 @@ typedef enum
     WALLHAVEN_CURL_FAIL,
     WALLHAVEN_FAIL,
     WALLHAVEN_NO_API_KEY,
+    WALLHAVEN_USING_ID_IN_COMBINATION,
+    WALLHAVEN_UNKNOW_PATH,
+    WALLHAVEN_UNKOWN_SORTING,
+    WALLHAVEN_UNKOWN_ORDER,
+    WALLHAVEN_UNKOWN_TOPRANGE,
+    WALLHAVEN_SORTING_SHOULD_BE_TOPLIST,
 } WallhavenCode;
 
 // Struct to store the response
@@ -82,9 +72,11 @@ typedef struct
     size_t size;
 } Response;
 
+// To check enum values as if(enumvalue) we will start from 1
+
 typedef enum
 {
-    PNG,
+    PNG = 1,
     JPEG,
     JPG = JPEG
 } Type;
@@ -98,13 +90,10 @@ tagname - search fuzzily for a tag/keyword.
 id:123 - Exact tag search (can not be combined).
 type:{png/jpg} - Search for file type (jpg = jpeg).
 like : wallpaper ID - Find wallpapers with similar tags.
-Here tagname is tags, -tag is exclude_tags, +tag is include tags
 */
 typedef struct
 {
     char *tags;
-    char *exclude_tags;
-    char *include_tags;
     char *user_name;
     char *id;
     Type type;
@@ -113,21 +102,21 @@ typedef struct
 
 typedef enum
 {
-    GENERAL = 1 << 0,
+    PEOPLE = 1 << 0,
     ANIME = 1 << 1,
-    PEOPLE = 1 << 2
+    GENERAL = 1 << 2
 } Category;
 
 typedef enum
 {
-    SFW = 1 << 0,
+    NSFW = 1 << 0,
     SKETCHY = 1 << 1,
-    NSFW = 1 << 2
+    SFW = 1 << 2
 } Purity;
 
 typedef enum
 {
-    DATE_ADDED,
+    DATE_ADDED = 1,
     RELEVANCE,
     RANDOM,
     VIEWS,
@@ -137,13 +126,13 @@ typedef enum
 
 typedef enum
 {
-    DESCENDING,
+    DESCENDING = 1,
     ASCENDING
 } Order;
 
 typedef enum
 {
-    ONE_DAY,
+    ONE_DAY = 1,
     THREE_DAYS,
     ONE_WEEK,
     ONE_MONTH,
@@ -161,8 +150,11 @@ typedef struct Parameters
     Sorting sorting;
     Order order;
     TopRange toprange;
+    char *atleast;
+    char *resolutions;
+    char *ratios;
     char *colors;
-    int page;
+    int page; // If set to zero ignores
     char seed[6 + 1];
 } Parameters;
 
