@@ -8,6 +8,7 @@
 #define WALLPAPER_INFO_PATH "/api/v1/w/"
 #define TAG_INFO_PATH "/api/v1/tag/"
 #define USER_SETTINGS_PATH "/api/v1/settings"
+#define SEARCH_PATH "/api/v1/search"
 
 // Check for Null pointer
 #define checkp_return(x, r) \
@@ -26,13 +27,6 @@ struct WallhavenAPI
     CURLU *url;
     const char *apikey;
 };
-
-typedef enum
-{
-    WALLPAPER,
-    TAG,
-    SETTINGS,
-} PathTo;
 
 // Helping functions
 
@@ -73,82 +67,11 @@ static CURLUcode append_query(WallhavenAPI *wa, const char *key, const char *val
     return r;
 }
 
-// Get info of Wallpaper/Tag
-static WallhavenCode get_info(WallhavenAPI *wa, const char *id, PathTo path_to)
-{
-    size_t size = strlen((path_to == WALLPAPER ? WALLPAPER_INFO_PATH : TAG_INFO_PATH)) + strlen(id) + 1;
-    char *path = (char *)malloc(size);
-
-    snprintf(path, size, (path_to == WALLPAPER ? WALLPAPER_INFO_PATH "%s" : TAG_INFO_PATH "%s"), id);
-
-    check_return(curl_url_set(wa->url, CURLUPART_PATH, path, CURLU_URLENCODE), WALLHAVEN_CURL_FAIL);
-    if (path_to == WALLPAPER && wa->apikey)
-        check_return(append_query(wa, "apikey", wa->apikey), WALLHAVEN_CURL_FAIL);
-
-    CURLcode c = curl_easy_perform(wa->curl);
-
-#ifdef DEBUG
-    curl_url_get(wa->url, CURLUPART_URL, &path, 0);
-    printf("URL: %s\n", path);
-    printf("CURLcode: %d\n", c);
-#endif
-
-    check_return(c, WALLHAVEN_CURL_FAIL);
-
-    free(path);
-
-    return WALLHAVEN_OK;
-}
-
-static WallhavenCode get_settings(WallhavenAPI *wa)
-{
-    check_return(curl_url_set(wa->url, CURLUPART_PATH, USER_SETTINGS_PATH, CURLU_URLENCODE), WALLHAVEN_CURL_FAIL);
-
-    checkp_return(wa->apikey, WALLHAVEN_NO_API_KEY);
-
-    check_return(append_query(wa, "apikey", wa->apikey), WALLHAVEN_CURL_FAIL);
-
-    CURLcode c = curl_easy_perform(wa->curl);
-
-#ifdef DEBUG
-    char *url;
-    curl_url_get(wa->url, CURLUPART_URL, &url, 0);
-    printf("URL: %s\n", url);
-    printf("CURLcode: %d\n", c);
-    free(url);
-#endif
-
-    check_return(c, WALLHAVEN_CURL_FAIL);
-
-    return WALLHAVEN_OK;
-}
-
 static CURLUcode reset(WallhavenAPI *wa)
 {
     // Reset the queries and options
     curl_easy_reset(wa->curl);
-
     return curl_url_set(wa->url, CURLUPART_QUERY, NULL, 0);
-}
-
-static WallhavenCode curl_to_response(WallhavenAPI *wa, Response *response)
-{
-    // Write curl output to response
-    check_return(curl_easy_setopt(wa->curl, CURLOPT_CURLU, wa->url), WALLHAVEN_CURL_FAIL);
-    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function), WALLHAVEN_CURL_FAIL);
-    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEDATA, (void *)response), WALLHAVEN_CURL_FAIL);
-
-    return WALLHAVEN_OK;
-}
-
-static WallhavenCode curl_to_file(WallhavenAPI *wa, FILE *file)
-{
-    // Write curl ouput to a file
-    check_return(curl_easy_setopt(wa->curl, CURLOPT_CURLU, wa->url), WALLHAVEN_CURL_FAIL);
-    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function_tofile), WALLHAVEN_CURL_FAIL);
-    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEDATA, (void *)file), WALLHAVEN_CURL_FAIL);
-
-    return WALLHAVEN_OK;
 }
 
 // API implementation
@@ -179,56 +102,105 @@ WallhavenCode wallhaven_apikey(WallhavenAPI *wa, const char *apikey)
     return WALLHAVEN_OK;
 }
 
-WallhavenCode wallhaven_wallpaper_info(WallhavenAPI *wa, const char *id, Response *response)
+WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response)
 {
     check_return(reset(wa), WALLHAVEN_CURL_FAIL);
 
-    check_return(curl_to_response(wa, response), WALLHAVEN_CURL_FAIL);
+    // Write curl output to response
+    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function), WALLHAVEN_CURL_FAIL);
+    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEDATA, (void *)response), WALLHAVEN_CURL_FAIL);
 
-    return get_info(wa, id, WALLPAPER);
+    return WALLHAVEN_OK;
 }
 
-WallhavenCode wallhaven_wallpaper_info_tofile(WallhavenAPI *wa, const char *id, FILE *file)
+WallhavenCode wallhaven_write_to_file(WallhavenAPI *wa, FILE *file)
 {
     check_return(reset(wa), WALLHAVEN_CURL_FAIL);
 
-    check_return(curl_to_file(wa, file), WALLHAVEN_CURL_FAIL);
+    // Write curl ouput to a file
+    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function_tofile), WALLHAVEN_CURL_FAIL);
+    check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEDATA, (void *)file), WALLHAVEN_CURL_FAIL);
 
-    return get_info(wa, id, WALLPAPER);
+    return WALLHAVEN_OK;
 }
 
-WallhavenCode wallhaven_tag_info(WallhavenAPI *wa, const char *id, Response *response)
+WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id)
 {
-    check_return(reset(wa), WALLHAVEN_CURL_FAIL);
+    size_t size;
+    char *path;
 
-    check_return(curl_to_response(wa, response), WALLHAVEN_CURL_FAIL);
+    switch (p)
+    {
+    case WALLPAPER_INFO:
+        if (wa->apikey)
+            check_return(append_query(wa, "apikey", wa->apikey), WALLHAVEN_CURL_FAIL);
+    case TAG_INFO:
+        size = 1 + strlen(id) + strlen(p == WALLPAPER_INFO ? WALLPAPER_INFO_PATH : TAG_INFO_PATH);
+        path = (char *)malloc(size);
+        snprintf(path, size, (p == WALLPAPER_INFO ? WALLPAPER_INFO_PATH "%s" : TAG_INFO_PATH "%s"), id);
+        break;
+    case SETTINGS:
+        checkp_return(wa->apikey, WALLHAVEN_NO_API_KEY);
+        check_return(append_query(wa, "apikey", wa->apikey), WALLHAVEN_CURL_FAIL);
+        size = 1 + strlen(USER_SETTINGS_PATH);
+        path = (char *)malloc(size);
+        snprintf(path, size, USER_SETTINGS_PATH);
+        break;
+    }
 
-    return get_info(wa, id, TAG);
+    check_return(curl_url_set(wa->url, CURLUPART_PATH, path, CURLU_URLENCODE), WALLHAVEN_CURL_FAIL);
+    check_return(curl_easy_setopt(wa->curl, CURLOPT_CURLU, wa->url), WALLHAVEN_CURL_FAIL);
+
+    CURLcode c = curl_easy_perform(wa->curl);
+
+#ifdef DEBUG
+    curl_url_get(wa->url, CURLUPART_URL, &path, 0);
+    printf("URL: %s\n", path);
+    printf("CURLcode: %d\n", c);
+#endif
+
+    check_return(c, WALLHAVEN_CURL_FAIL);
+
+    free(path);
+
+    return WALLHAVEN_OK;
 }
 
-WallhavenCode wallhaven_tag_info_tofile(WallhavenAPI *wa, const char *id, FILE *file)
+WallhavenCode wallhaven_search(WallhavenAPI *wa, const Parameters *p)
 {
-    check_return(reset(wa), WALLHAVEN_CURL_FAIL);
-
-    check_return(curl_to_file(wa, file), WALLHAVEN_CURL_FAIL);
-
-    return get_info(wa, id, TAG);
-}
-
-WallhavenCode wallhaven_get_user_settings(WallhavenAPI *wa, Response *response)
-{
-    check_return(reset(wa), WALLHAVEN_CURL_FAIL);
-
-    check_return(curl_to_response(wa, response), WALLHAVEN_CURL_FAIL);
-
-    return get_settings(wa);
-}
-
-WallhavenCode wallhaven_get_user_settings_tofile(WallhavenAPI *wa, FILE *file)
-{
-    check_return(reset(wa), WALLHAVEN_CURL_FAIL);
-
-    check_return(curl_to_file(wa, file), WALLHAVEN_CURL_FAIL);
-
-    return get_settings(wa);
+#ifdef DEBUG
+    printf(
+        "Parameters:\n"
+        "\tQuery:\n"
+        "\t\tTags = %s\n"
+        "\t\tExclude tags = %s\n"
+        "\t\tInclude tags = %s\n"
+        "\t\tUser name = %s\n"
+        "\t\tId = %s\n"
+        "\t\tType = %d\n"
+        "\t\tlike = %s\n"
+        "\tCategories = %d\n"
+        "\tPurity = %d\n"
+        "\tSorting = %d\n"
+        "\tOrder = %d\n"
+        "\tTopRange = %d\n"
+        "\tColors = %s\n"
+        "\tPage = %d\n"
+        "\tSeed = %s\n",
+        p->q->tags,
+        p->q->exclude_tags,
+        p->q->include_tags,
+        p->q->user_name,
+        p->q->id,
+        p->q->type,
+        p->q->like,
+        p->categories,
+        p->purity,
+        p->sorting,
+        p->order,
+        p->toprange,
+        p->colors,
+        p->page,
+        p->seed);
+#endif
 }
