@@ -2,6 +2,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+// NOTE: Haven't checked the portablility of this code.
+// NOTE: So for now linux only
 
 #include <curl/curl.h>
 
@@ -9,6 +13,7 @@
 #define TAG_INFO_PATH "/api/v1/tag/"
 #define USER_SETTINGS_PATH "/api/v1/settings"
 #define SEARCH_PATH "/api/v1/search"
+#define COLLECTIONS_PATH "/api/v1/collections"
 
 // Check whetehr Null pointer and if yes return
 #define checkp_return(x, r) \
@@ -401,6 +406,16 @@ WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id)
         path = (char *)malloc(size);
         snprintf(path, size, SEARCH_PATH);
         break;
+    case COLLECTIONS:
+        if (!id)
+        {
+            checkp_return(wa->apikey, WALLHAVEN_NO_API_KEY);
+            check_return(append_query(wa, "apikey", wa->apikey), WALLHAVEN_CURL_FAIL);
+        }
+        size = 1 + strlen(COLLECTIONS_PATH) + (id ? strlen(id) + 1 /*For '/' */ : 0);
+        path = (char *)malloc(size);
+        snprintf(path, size, COLLECTIONS_PATH "/%s", id);
+        break;
     default:
         return WALLHAVEN_UNKNOW_PATH;
     }
@@ -409,6 +424,13 @@ WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id)
     check_return(curl_easy_setopt(wa->curl, CURLOPT_CURLU, wa->url), WALLHAVEN_CURL_FAIL);
 
     CURLcode c = curl_easy_perform(wa->curl);
+
+    long response_code;
+    check_return(curl_easy_getinfo(wa->curl, CURLINFO_RESPONSE_CODE, &response_code), WALLHAVEN_CURL_FAIL);
+    // if (response_code == 429)
+    // TODO: Too many requests
+    // else if (response_code == 401)
+    // TODO: Unauthorized access
 
 #ifdef DEBUG
     curl_url_get(wa->url, CURLUPART_URL, &path, 0);
@@ -502,4 +524,16 @@ WallhavenCode wallhaven_search(WallhavenAPI *wa, const Parameters *p)
     check_return(wc, wc);
 
     return wallhaven_get_result(wa, SEARCH, NULL);
+}
+
+WallhavenCode wallhaven_wallpapers_of_collections(WallhavenAPI *wa, const char *user, const char *id, int purity)
+{
+    size_t size = snprintf(NULL, 0, "%s/%s", user, id) + 1;
+    char *concat = (char *)malloc(size);
+    snprintf(concat, size, "%s/%s", user, id);
+
+    WallhavenCode wc = format_purity(wa, purity);
+    check_return(wc, wc);
+
+    return wallhaven_get_result(wa, COLLECTIONS, concat);
 }

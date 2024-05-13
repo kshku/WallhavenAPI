@@ -49,6 +49,14 @@
 #define wallhaven_user_settings(wallhaven_api) \
     wallhaven_get_result(wa, SETTINGS, NULL)
 
+// Get personal collections
+#define wallhaven_my_collections(wallhaven_api) \
+    wallhaven_get_result(wallhaven_api, COLLECTIONS, NULL)
+
+// Get collections of another user
+#define wallhaven_collections_of(wallhaven_api, user_name) \
+    wallhaven_get_result(wallhaven_api, COLLECTIONS, user_name)
+
 // Error codes returned by functions
 typedef enum
 {
@@ -164,6 +172,7 @@ typedef enum
     TAG_INFO,
     SETTINGS,
     SEARCH,
+    COLLECTIONS,
 } Path;
 
 // Defined in c file
@@ -181,13 +190,18 @@ WallhavenCode wallhaven_apikey(WallhavenAPI *wa, const char *apikey);
 
 // Write the result to Response when called wallhaven_get_result
 WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response);
+
 // Write the result to a file when called wallhaven_get_result
 WallhavenCode wallhaven_write_to_file(WallhavenAPI *wa, FILE *file);
+
 // Get the result
 // If neither wallhaven_write_to_response nor wallhaven_write_to_file set writes result to stdout
 WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id);
 
 // Search wallpapers
 WallhavenCode wallhaven_search(WallhavenAPI *wa, const Parameters *p);
+
+// Get wallpapers in the collection
+WallhavenCode wallhaven_wallpapers_of_collections(WallhavenAPI *wa, const char *user, const char *id, int purity);
 
 #endif
