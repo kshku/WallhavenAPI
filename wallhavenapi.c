@@ -2,10 +2,25 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 // NOTE: Haven't checked the portablility of this code.
-// NOTE: So for now linux only
+#if defined(_WIN32) | defined(_WIN64)
+#define WALLHAVEN_PLATFORM_WINDOWS
+#elif defined(__APPLE__) | defined(__MACH__)
+#define WALLHAVEN_PLATFORM_MACOS
+#elif defined(__linux__)
+#define WALLHAVEN_PLATFORM_LINUX
+#else
+#error "Platform is not supported"
+#endif
+
+#ifdef WALLHAVEN_PLATFORM_WINDOWS
+#include <windows.h>
+#define sleep_ms(ms) Sleep(ms)
+#elif defined(WALLHAVEN_PLATFORM_MACOS) | defined(WALLHAVEN_PLATFORM_LINUX)
+#include <unistd.h>
+#define sleep_ms(ms) usleep((ms) * 1000)
+#endif
 
 #include <curl/curl.h>
 
@@ -31,12 +46,29 @@ struct WallhavenAPI
     CURL *curl;
     CURLU *url;
     const char *apikey;
+    bool api_key_set;
+    onMaxAPICallLimit api_call_limit_error;
+    Response *response;
+    time_t start_time;
 };
+
+// Default function for handling api_max_call_limit_error
+static bool default_api_call_limit(time_t *start_time)
+{
+    time_t t = time(NULL);
+    struct tm *current_time = localtime(&t);
+    int wait_time = 60 - difftime(t, *start_time) + 1;
+    printf("Hit max api call limit, waiting for %d seconds before retrying...\n", wait_time);
+    sleep_ms(wait_time * 1000);
+
+    return true;
+}
 
 // Helping functions
 
 // Callback function to write data into Response struct
-static size_t write_function(void *data, size_t size, size_t nmemb, void *clientp)
+static size_t
+write_function(void *data, size_t size, size_t nmemb, void *clientp)
 {
     size_t realsize = size * nmemb;
     Response *r = (Response *)clientp;
@@ -62,6 +94,12 @@ static size_t write_function_tofile(void *data, size_t size, size_t nmemb, void 
 // Append query as key=value
 static WallhavenCode append_query(WallhavenAPI *wa, const char *key, const char *value)
 {
+    if (key == "apikey" && wa->api_key_set)
+        return WALLHAVEN_OK;
+
+    if (key == "apikey")
+        wa->api_key_set = true;
+
     size_t size = strlen(key) + 1 + strlen(value) + 1;
     char *query = (char *)malloc(size);
 
@@ -324,6 +362,7 @@ static CURLUcode reset(WallhavenAPI *wa)
 {
     // Reset the queries and options
     curl_easy_reset(wa->curl);
+    wa->api_key_set = false;
     return curl_url_set(wa->url, CURLUPART_QUERY, NULL, 0);
 }
 
@@ -336,6 +375,12 @@ WallhavenAPI *wallhaven_init()
     checkp_return(wa->curl = curl_easy_init(), NULL);
     checkp_return(wa->url = curl_url(), NULL);
     check_return(curl_url_set(wa->url, CURLUPART_URL, "https://wallhaven.cc", CURLU_URLENCODE), NULL);
+
+    wa->api_call_limit_error = default_api_call_limit;
+    wa->response = NULL;
+    wa->api_key_set = false;
+    wa->apikey = NULL;
+    wa->start_time = -1;
 
     return wa;
 }
@@ -358,6 +403,7 @@ WallhavenCode wallhaven_apikey(WallhavenAPI *wa, const char *apikey)
 WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response)
 {
     check_return(reset(wa), WALLHAVEN_CURL_FAIL);
+    wa->response = response;
 
     // Write curl output to response
     check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function), WALLHAVEN_CURL_FAIL);
@@ -369,6 +415,7 @@ WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response)
 WallhavenCode wallhaven_write_to_file(WallhavenAPI *wa, FILE *file)
 {
     check_return(reset(wa), WALLHAVEN_CURL_FAIL);
+    wa->response = NULL;
 
     // Write curl ouput to a file
     check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function_tofile), WALLHAVEN_CURL_FAIL);
@@ -381,6 +428,13 @@ WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id)
 {
     size_t size;
     char *path;
+
+    if (wa->response)
+    {
+        wa->response->size = 0;
+        if (!wa->response->value)
+            wa->response->value = NULL;
+    }
 
     switch (p)
     {
@@ -423,19 +477,31 @@ WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id)
     check_return(curl_url_set(wa->url, CURLUPART_PATH, path, CURLU_URLENCODE), WALLHAVEN_CURL_FAIL);
     check_return(curl_easy_setopt(wa->curl, CURLOPT_CURLU, wa->url), WALLHAVEN_CURL_FAIL);
 
+    if (wa->start_time == -1)
+        time(&wa->start_time);
+
+    if (difftime(time(NULL), wa->start_time) > 60)
+        time(&wa->start_time);
+
     CURLcode c = curl_easy_perform(wa->curl);
 
     long response_code;
     check_return(curl_easy_getinfo(wa->curl, CURLINFO_RESPONSE_CODE, &response_code), WALLHAVEN_CURL_FAIL);
-    // if (response_code == 429)
-    // TODO: Too many requests
-    // else if (response_code == 401)
-    // TODO: Unauthorized access
+    if (response_code == 429)
+    {
+        if (wa->api_call_limit_error(&wa->start_time))
+            return wallhaven_get_result(wa, p, id);
+        else
+            return WALLHAVEN_TOO_MANY_REQUSTS_ERROR;
+    }
+    else if (response_code == 401)
+        return WALLHAVEN_UNAUTHORIZED_ERROR;
 
 #ifdef DEBUG
     curl_url_get(wa->url, CURLUPART_URL, &path, 0);
     printf("URL: %s\n", path);
     printf("CURLcode: %d\n", c);
+    printf("Response code: %ld\n", response_code);
 #endif
 
     check_return(c, WALLHAVEN_CURL_FAIL);

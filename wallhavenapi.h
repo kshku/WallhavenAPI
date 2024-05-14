@@ -4,6 +4,8 @@
 // NOTE: Read api before using. API LINk: https://wallhaven.cc/help/api
 
 #include <stdio.h>
+#include <stdbool.h>
+#include <time.h>
 
 // Color names are from https://colors.artyclick.com/color-name-finder/
 #define Rosewood "660000"
@@ -57,6 +59,10 @@
 #define wallhaven_collections_of(wallhaven_api, user_name) \
     wallhaven_get_result(wallhaven_api, COLLECTIONS, user_name)
 
+// Return true to retry
+// Else wallhaven_get_result will return WALLHAVEN_TOO_MANY_REQUESTS_ERROR
+typedef bool (*onMaxAPICallLimit)(time_t *start_time);
+
 // Error codes returned by functions
 typedef enum
 {
@@ -70,6 +76,8 @@ typedef enum
     WALLHAVEN_UNKOWN_ORDER,
     WALLHAVEN_UNKOWN_TOPRANGE,
     WALLHAVEN_SORTING_SHOULD_BE_TOPLIST,
+    WALLHAVEN_TOO_MANY_REQUSTS_ERROR,
+    WALLHAVEN_UNAUTHORIZED_ERROR,
 } WallhavenCode;
 
 // Struct to store the response
