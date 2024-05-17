@@ -61,7 +61,7 @@
 
 // Return true to retry
 // Else wallhaven_get_result will return WALLHAVEN_TOO_MANY_REQUESTS_ERROR
-typedef bool (*onMaxAPICallLimit)(time_t *start_time);
+typedef bool (*onMaxAPICallLimitError)(time_t *start_time);
 
 // Error codes returned by functions
 typedef enum
@@ -211,5 +211,8 @@ WallhavenCode wallhaven_search(WallhavenAPI *wa, const Parameters *p);
 
 // Get wallpapers in the collection
 WallhavenCode wallhaven_wallpapers_of_collections(WallhavenAPI *wa, const char *user, const char *id, int purity);
+
+// Set function to call on maximum api call limit is hit
+void wallhaven_set_on_api_call_limit_error(WallhavenAPI *wa, onMaxAPICallLimitError func);
 
 #endif

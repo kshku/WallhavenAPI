@@ -47,7 +47,7 @@ struct WallhavenAPI
     CURLU *url;
     const char *apikey;
     bool api_key_set;
-    onMaxAPICallLimit api_call_limit_error;
+    onMaxAPICallLimitError api_call_limit_error;
     Response *response;
     time_t start_time;
 };
@@ -602,4 +602,9 @@ WallhavenCode wallhaven_wallpapers_of_collections(WallhavenAPI *wa, const char *
     check_return(wc, wc);
 
     return wallhaven_get_result(wa, COLLECTIONS, concat);
+}
+
+void wallhaven_set_on_api_call_limit_error(WallhavenAPI *wa, onMaxAPICallLimitError func)
+{
+    wa->api_call_limit_error = func;
 }
