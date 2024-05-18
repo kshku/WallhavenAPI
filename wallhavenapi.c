@@ -67,8 +67,7 @@ static bool default_api_call_limit(time_t *start_time)
 // Helping functions
 
 // Callback function to write data into Response struct
-static size_t
-write_function(void *data, size_t size, size_t nmemb, void *clientp)
+static size_t write_function(void *data, size_t size, size_t nmemb, void *clientp)
 {
     size_t realsize = size * nmemb;
     Response *r = (Response *)clientp;
@@ -393,11 +392,9 @@ void wallhaven_free(WallhavenAPI *wa)
     free(wa);
 }
 
-WallhavenCode wallhaven_apikey(WallhavenAPI *wa, const char *apikey)
+void wallhaven_apikey(WallhavenAPI *wa, const char *apikey)
 {
-    checkp_return(wa->apikey = apikey, WALLHAVEN_FAIL);
-
-    return WALLHAVEN_OK;
+    wa->apikey = apikey;
 }
 
 WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response)

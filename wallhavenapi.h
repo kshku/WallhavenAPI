@@ -68,7 +68,6 @@ typedef enum
 {
     WALLHAVEN_OK,
     WALLHAVEN_CURL_FAIL,
-    WALLHAVEN_FAIL,
     WALLHAVEN_NO_API_KEY,
     WALLHAVEN_USING_ID_IN_COMBINATION,
     WALLHAVEN_UNKNOW_PATH,
@@ -194,7 +193,7 @@ WallhavenAPI *wallhaven_init();
 void wallhaven_free(WallhavenAPI *wa);
 
 // Provide the api key
-WallhavenCode wallhaven_apikey(WallhavenAPI *wa, const char *apikey);
+void wallhaven_apikey(WallhavenAPI *wa, const char *apikey);
 
 // Write the result to Response when called wallhaven_get_result
 WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response);
