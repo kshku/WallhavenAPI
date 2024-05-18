@@ -22,8 +22,6 @@
 #define sleep_ms(ms) usleep((ms) * 1000)
 #endif
 
-#include <curl/curl.h>
-
 #define WALLPAPER_INFO_PATH "/api/v1/w/"
 #define TAG_INFO_PATH "/api/v1/tag/"
 #define USER_SETTINGS_PATH "/api/v1/settings"
@@ -40,17 +38,6 @@
 #define check_return(x, r) \
     if (x != 0)            \
     return r
-
-struct WallhavenAPI
-{
-    CURL *curl;
-    CURLU *url;
-    const char *apikey;
-    bool api_key_set;
-    onMaxAPICallLimitError api_call_limit_error;
-    Response *response;
-    time_t start_time;
-};
 
 // Default function for handling api_max_call_limit_error
 static bool default_api_call_limit(time_t *start_time)

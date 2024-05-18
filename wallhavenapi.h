@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <time.h>
 
+#include <curl/curl.h>
+
 // Color names are from https://colors.artyclick.com/color-name-finder/
 #define Rosewood "660000"
 #define CrimsonRed "990000"
@@ -183,7 +185,16 @@ typedef enum
 } Path;
 
 // Defined in c file
-typedef struct WallhavenAPI WallhavenAPI;
+typedef struct WallhavenAPI
+{
+    CURL *curl;
+    CURLU *url;
+    const char *apikey;
+    bool api_key_set;
+    onMaxAPICallLimitError api_call_limit_error;
+    Response *response;
+    time_t start_time;
+} WallhavenAPI;
 
 // Wallhaven api functions
 
