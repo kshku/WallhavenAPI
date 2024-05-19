@@ -1,0 +1,80 @@
+.TH "Parameters" 3 "Version 1.0.0" "WallhavenAPI" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Parameters \- All parameters to search images\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fR#include <wallhavenapi\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "\fBQuery\fP * \fBq\fP"
+.br
+.RI "Pointer to the \fBQuery\fP structure to use\&. "
+.ti -1c
+.RI "int \fBcategories\fP"
+.br
+.RI "Categories flag\&. Search for the images belonging to the categories\&. "
+.ti -1c
+.RI "int \fBpurity\fP"
+.br
+.RI "Purity flag\&. Search for the images having the purity\&. "
+.ti -1c
+.RI "\fBSorting\fP \fBsorting\fP"
+.br
+.RI "Method to sort the images\&. "
+.ti -1c
+.RI "\fBOrder\fP \fBorder\fP"
+.br
+.RI "Sorting order of the images\&. "
+.ti -1c
+.RI "\fBTopRange\fP \fBtoprange\fP"
+.br
+.RI "Toplist in the range of\&. "
+.ti -1c
+.RI "char * \fBatleast\fP"
+.br
+.RI "The minimum resolution the image should have 
+.br
+ "
+.ti -1c
+.RI "char * \fBresolutions\fP"
+.br
+.RI "List of exact wallpaper resolutions to look for\&. "
+.ti -1c
+.RI "char * \fBratios\fP"
+.br
+.RI "List of exact wallpaper ratios to look for\&. "
+.ti -1c
+.RI "char * \fBcolors\fP"
+.br
+.RI "Search for the images having the colors\&. "
+.ti -1c
+.RI "int \fBpage\fP"
+.br
+.RI "List images in the page number\&. "
+.ti -1c
+.RI "char \fBseed\fP [6+1]"
+.br
+.RI "Seed for random results\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+All parameters to search images\&. 
+
+This struct is passed to the wallhaven_search function specifying the parameter
+.PP
+\fRDocumentation of the pararmeters\fP 
+.PP
+\fBExamples\fP
+.in +1c
+\fBparameters\&.c\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for WallhavenAPI from the source code\&.

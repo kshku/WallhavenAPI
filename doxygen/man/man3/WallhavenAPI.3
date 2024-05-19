@@ -1,0 +1,59 @@
+.TH "WallhavenAPI" 3 "Version 1.0.0" "WallhavenAPI" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+WallhavenAPI \- Struct for storing the stuffs for doing the API related things\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fR#include <wallhavenapi\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "CURL * \fBcurl\fP"
+.br
+.RI "The curl easy handle for making api calls\&. "
+.ti -1c
+.RI "CURLU * \fBurl\fP"
+.br
+.RI "The curl url to parse and create url\&. "
+.ti -1c
+.RI "const char * \fBapikey\fP"
+.br
+.RI "The API key to use for authentication\&. "
+.ti -1c
+.RI "bool \fBapi_key_set\fP"
+.br
+.RI "Used for internal logic\&. "
+.ti -1c
+.RI "\fBonMaxAPICallLimitError\fP \fBapi_call_limit_error\fP"
+.br
+.RI "Funciton to call when maximum api call limit is hit\&. "
+.ti -1c
+.RI "time_t \fBstart_time\fP"
+.br
+.RI "To keep track of when we started to make api calls\&. Passed to the api_call_limit_error function\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Struct for storing the stuffs for doing the API related things\&. 
+
+Use the wallhaven_init to create get the pointer to this struct\&. Use provided functions to modify the values Don't forget to call the wallhaven_free function at the end\&. 
+.PP
+\fBNote\fP
+.RS 4
+Not supposed to used directly\&. 
+.RE
+.PP
+
+.PP
+\fBExamples\fP
+.in +1c
+\fBparameters\&.c\fP, and \fBresponse\&.c\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for WallhavenAPI from the source code\&.

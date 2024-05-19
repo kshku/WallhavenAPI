@@ -1,0 +1,664 @@
+.TH "wallhavenapi.h" 3 "Version 1.0.0" "WallhavenAPI" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+wallhavenapi.h \- Header file of \fBWallhavenAPI\fP implementation in C\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+\fR#include <stdio\&.h>\fP
+.br
+\fR#include <stdbool\&.h>\fP
+.br
+\fR#include <time\&.h>\fP
+.br
+\fR#include <curl/curl\&.h>\fP
+.br
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "struct \fBResponse\fP"
+.br
+.RI "Structure to store the response\&. "
+.ti -1c
+.RI "struct \fBQuery\fP"
+.br
+.RI "Search query struct\&. "
+.ti -1c
+.RI "struct \fBParameters\fP"
+.br
+.RI "All parameters to search images\&. "
+.ti -1c
+.RI "struct \fBWallhavenAPI\fP"
+.br
+.RI "Struct for storing the stuffs for doing the API related things\&. "
+.in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBRosewood\fP   '660000'"
+.br
+.RI "Name for the color hex 660000\&. "
+.ti -1c
+.RI "#define \fBCrimsonRed\fP   '990000'"
+.br
+.RI "Name for the color hex 990000\&. "
+.ti -1c
+.RI "#define \fBRossoCorsa\fP   'cc0000'"
+.br
+.RI "Name for the color hex cc0000\&. "
+.ti -1c
+.RI "#define \fBPersianRed\fP   'cc3333'"
+.br
+.RI "Name for the color hex cc3333\&. "
+.ti -1c
+.RI "#define \fBDarkPink\fP   'ea4c88'"
+.br
+.RI "Name for the color hex ea4c88\&. "
+.ti -1c
+.RI "#define \fBWarmPurple\fP   '993399'"
+.br
+.RI "Name for the color hex 993399\&. "
+.ti -1c
+.RI "#define \fBEminence\fP   '663399'"
+.br
+.RI "Name for the color hex 663399\&. "
+.ti -1c
+.RI "#define \fBBlueberry\fP   '333399'"
+.br
+.RI "Name for the color hex 333399\&. "
+.ti -1c
+.RI "#define \fBScienceBlue\fP   '0066cc'"
+.br
+.RI "Name for the color hex 0066cc\&. "
+.ti -1c
+.RI "#define \fBPacificBlue\fP   '0099cc'"
+.br
+.RI "Name for the color hex 0099cc\&. "
+.ti -1c
+.RI "#define \fBDowny\fP   '66cccc'"
+.br
+.RI "Name for the color hex 66cccc\&. "
+.ti -1c
+.RI "#define \fBAppleGreen\fP   '77cc33'"
+.br
+.RI "Name for the color hex 77cc33\&. "
+.ti -1c
+.RI "#define \fBVenomGreen\fP   '669900'"
+.br
+.RI "Name for the color hex 669900\&. "
+.ti -1c
+.RI "#define \fBGreenLeaf\fP   '336600'"
+.br
+.RI "Name for the color hex 336600\&. "
+.ti -1c
+.RI "#define \fBGreenyBrown\fP   '666600'"
+.br
+.RI "Name for the color hex 666600\&. "
+.ti -1c
+.RI "#define \fBBrownYellow\fP   '999900'"
+.br
+.RI "Name for the color hex 999900\&. "
+.ti -1c
+.RI "#define \fBBirdFlower\fP   'cccc33'"
+.br
+.RI "Name for the color hex cccc33\&. "
+.ti -1c
+.RI "#define \fBArtyClickYellow\fP   'ffff00'"
+.br
+.RI "Name for the color hex ffff00\&. "
+.ti -1c
+.RI "#define \fBSunglow\fP   'ffcc33'"
+.br
+.RI "Name for the color hex ffcc33\&. "
+.ti -1c
+.RI "#define \fBOrangePeel\fP   'ff9900'"
+.br
+.RI "Name for the color hex ff9900\&. "
+.ti -1c
+.RI "#define \fBBlazeOrange\fP   'ff6600'"
+.br
+.RI "Name for the color hex ff6600\&. "
+.ti -1c
+.RI "#define \fBTerraCotta\fP   'cc6633'"
+.br
+.RI "Name for the color hex cc6633\&. "
+.ti -1c
+.RI "#define \fBWood\fP   '996633'"
+.br
+.RI "Name for the color hex 996633\&. "
+.ti -1c
+.RI "#define \fBNutmegWood\fP   '663300'"
+.br
+.RI "Name for the color hex 663300\&. "
+.ti -1c
+.RI "#define \fBBlack\fP   '000000'"
+.br
+.RI "Name for the color hex 000000\&. "
+.ti -1c
+.RI "#define \fBLemonGrass\fP   '999999'"
+.br
+.RI "Name for the color hex 999999\&. "
+.ti -1c
+.RI "#define \fBPastelGrey\fP   'cccccc'"
+.br
+.RI "Name for the color hex cccccc\&. "
+.ti -1c
+.RI "#define \fBWhite\fP   'ffffff'"
+.br
+.RI "Name for the color hex ffffff\&. "
+.ti -1c
+.RI "#define \fBGunPowder\fP   '424153'"
+.br
+.RI "Name for the color hex 424153\&. "
+.ti -1c
+.RI "#define \fBwallhaven_wallpaper_info\fP(wallhaven_api,  id)       wallhaven_get_result(wa, \fBWALLPAPER_INFO\fP, id)"
+.br
+.RI "Get wallpaper information\&. "
+.ti -1c
+.RI "#define \fBwallhaven_tag_info\fP(wallhaven_api,  id)       wallhaven_get_result(wa, \fBTAG_INFO\fP, id)"
+.br
+.RI "Get Tag information\&. "
+.ti -1c
+.RI "#define \fBwallhaven_user_settings\fP(wallhaven_api)       wallhaven_get_result(wa, \fBSETTINGS\fP, NULL)"
+.br
+.RI "Get user settings from wallhaven\&. "
+.ti -1c
+.RI "#define \fBwallhaven_my_collections\fP(wallhaven_api)       wallhaven_get_result(wallhaven_api, \fBCOLLECTIONS\fP, NULL)"
+.br
+.RI "Get personal collections\&. "
+.ti -1c
+.RI "#define \fBwallhaven_collections_of\fP(wallhaven_api,  user_name)       wallhaven_get_result(wallhaven_api, \fBCOLLECTIONS\fP, user_name)"
+.br
+.RI "Get collections of another user\&. "
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef bool(* \fBonMaxAPICallLimitError\fP) (time_t *start_time)"
+.br
+.RI "Type of function to call when hit maximum API call limit\&. "
+.ti -1c
+.RI "typedef struct Parameters \fBParameters\fP"
+.br
+.RI "All parameters to search images\&. "
+.ti -1c
+.RI "typedef struct WallhavenAPI \fBWallhavenAPI\fP"
+.br
+.RI "Struct for storing the stuffs for doing the API related things\&. "
+.in -1c
+.SS "Enumerations"
+
+.in +1c
+.ti -1c
+.RI "enum \fBWallhavenCode\fP { \fBWALLHAVEN_OK\fP, \fBWALLHAVEN_CURL_FAIL\fP, \fBWALLHAVEN_NO_API_KEY\fP, \fBWALLHAVEN_USING_ID_IN_COMBINATION\fP, \fBWALLHAVEN_UNKNOW_PATH\fP, \fBWALLHAVEN_UNKOWN_SORTING\fP, \fBWALLHAVEN_UNKOWN_ORDER\fP, \fBWALLHAVEN_UNKOWN_TOPRANGE\fP, \fBWALLHAVEN_SORTING_SHOULD_BE_TOPLIST\fP, \fBWALLHAVEN_TOO_MANY_REQUSTS_ERROR\fP, \fBWALLHAVEN_UNAUTHORIZED_ERROR\fP }"
+.br
+.RI "Error codes returned from API functions\&. "
+.ti -1c
+.RI "enum \fBType\fP { \fBPNG\fP = 1, \fBJPEG\fP, \fBJPG\fP = JPEG }"
+.br
+.RI "Enum for image format type\&. "
+.ti -1c
+.RI "enum \fBCategory\fP { \fBPEOPLE\fP = 1 << 0, \fBANIME\fP = 1 << 1, \fBGENERAL\fP = 1 << 2 }"
+.br
+.RI "Enum representing the catgories of images\&. "
+.ti -1c
+.RI "enum \fBPurity\fP { \fBNSFW\fP = 1 << 0, \fBSKETCHY\fP = 1 << 1, \fBSFW\fP = 1 << 2 }"
+.br
+.RI "Enum for purity of images\&. "
+.ti -1c
+.RI "enum \fBSorting\fP { \fBDATE_ADDED\fP = 1, \fBRELEVANCE\fP, \fBRANDOM\fP, \fBVIEWS\fP, \fBFAVORITES\fP, \fBTOPLIST\fP }"
+.br
+.RI "Enum for sorting ways of the images\&. "
+.ti -1c
+.RI "enum \fBOrder\fP { \fBDESCENDING\fP = 1, \fBASCENDING\fP }"
+.br
+.RI "Enum for which order the images to be sorted\&. "
+.ti -1c
+.RI "enum \fBTopRange\fP { \fBONE_DAY\fP = 1, \fBTHREE_DAYS\fP, \fBONE_WEEK\fP, \fBONE_MONTH\fP, \fBTHREE_MONTHS\fP, \fBSIX_MONTHS\fP, \fBONE_YEAR\fP }"
+.br
+.RI "Enum for Toprange values\&. "
+.ti -1c
+.RI "enum \fBPath\fP { \fBWALLPAPER_INFO\fP, \fBTAG_INFO\fP, \fBSETTINGS\fP, \fBSEARCH\fP, \fBCOLLECTIONS\fP }"
+.br
+.RI "Enum values to specify which path to use\&. "
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBWallhavenAPI\fP * \fBwallhaven_init\fP ()"
+.br
+.RI "initialize \fBWallhavenAPI\fP "
+.ti -1c
+.RI "void \fBwallhaven_free\fP (\fBWallhavenAPI\fP *wa)"
+.br
+.RI "Free allocated memory of \fBWallhavenAPI\fP\&. "
+.ti -1c
+.RI "void \fBwallhaven_apikey\fP (\fBWallhavenAPI\fP *wa, const char *apikey)"
+.br
+.RI "Set API key\&. "
+.ti -1c
+.RI "\fBWallhavenCode\fP \fBwallhaven_write_to_response\fP (\fBWallhavenAPI\fP *wa, \fBResponse\fP *response)"
+.br
+.RI "Write the response of API call to response\&. "
+.ti -1c
+.RI "\fBWallhavenCode\fP \fBwallhaven_write_to_file\fP (\fBWallhavenAPI\fP *wa, FILE *file)"
+.br
+.RI "Write the response of API call to a file\&. "
+.ti -1c
+.RI "\fBWallhavenCode\fP \fBwallhaven_get_result\fP (\fBWallhavenAPI\fP *wa, \fBPath\fP p, const char *id)"
+.br
+.RI "Make API call\&. "
+.ti -1c
+.RI "\fBWallhavenCode\fP \fBwallhaven_search\fP (\fBWallhavenAPI\fP *wa, \fBParameters\fP *p)"
+.br
+.RI "Search for wallpaper\&. "
+.ti -1c
+.RI "\fBWallhavenCode\fP \fBwallhaven_wallpapers_of_collections\fP (\fBWallhavenAPI\fP *wa, const char *user, const char *id, int purity)"
+.br
+.RI "Wallpapers in the collection of a user\&. "
+.ti -1c
+.RI "void \fBwallhaven_set_on_api_call_limit_error\fP (\fBWallhavenAPI\fP *wa, \fBonMaxAPICallLimitError\fP func)"
+.br
+.RI "Set function to call on maximum API call limit hit\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Header file of \fBWallhavenAPI\fP implementation in C\&. 
+
+
+.PP
+\fBAuthor\fP
+.RS 4
+kshku 
+.RE
+.PP
+\fBVersion\fP
+.RS 4
+0\&.1 
+.RE
+.PP
+\fBDate\fP
+.RS 4
+2024-05-18
+.RE
+.PP
+\fBCopyright\fP
+.RS 4
+MIT License
+.RE
+.PP
+Copyright (c) 2024 K Shreekrishna Upadhyaya
+.PP
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+.PP
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software\&.
+.PP
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\&. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE\&. 
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define wallhaven_collections_of(wallhaven_api, user_name)       wallhaven_get_result(wallhaven_api, \fBCOLLECTIONS\fP, user_name)"
+
+.PP
+Get collections of another user\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwallhaven_api\fP Pointer to the \fBWallhavenAPI\fP struct 
+.br
+\fIuser_name\fP Name of the user whose collections to get 
+.RE
+.PP
+
+.SS "#define wallhaven_my_collections(wallhaven_api)       wallhaven_get_result(wallhaven_api, \fBCOLLECTIONS\fP, NULL)"
+
+.PP
+Get personal collections\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwallhaven_api\fP Pointer to the \fBWallhavenAPI\fP struct 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+Should set the API key before using this function 
+.RE
+.PP
+
+.SS "#define wallhaven_tag_info(wallhaven_api, id)       wallhaven_get_result(wa, \fBTAG_INFO\fP, id)"
+
+.PP
+Get Tag information\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwallhaven_api\fP Pointer to the \fBWallhavenAPI\fP struct 
+.br
+\fIid\fP Id of the tag to get information about 
+.RE
+.PP
+
+.PP
+\fBExamples\fP
+.in +1c
+\fBresponse\&.c\fP\&.
+.SS "#define wallhaven_user_settings(wallhaven_api)       wallhaven_get_result(wa, \fBSETTINGS\fP, NULL)"
+
+.PP
+Get user settings from wallhaven\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwallhaven_api\fP Pointer to the \fBWallhavenAPI\fP struct 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+Should set the API key before using this function 
+.RE
+.PP
+
+.SS "#define wallhaven_wallpaper_info(wallhaven_api, id)       wallhaven_get_result(wa, \fBWALLPAPER_INFO\fP, id)"
+
+.PP
+Get wallpaper information\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwallhaven_api\fP Pointer to the \fBWallhavenAPI\fP struct 
+.br
+\fIid\fP Id of the wallpaper to get information about 
+.RE
+.PP
+
+.SH "Typedef Documentation"
+.PP 
+.SS "typedef bool(* onMaxAPICallLimitError) (time_t *start_time)"
+
+.PP
+Type of function to call when hit maximum API call limit\&. If no function is given default function is used which waits for completion of one minute from the first API call and then retries\&. Look at the default_maclh\&.c in the examples for the code\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIstart_time\fP Pointer to the time at which the calls to API started\&. 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+The start_time is updated as 
+.PP
+.nf
+if (difftime(time(NULL), start_time) > 60) time(&start_time);
+
+.fi
+.PP
+ 
+.PP
+This just checks whether it's already a minute since the first API call and if it is true it changes the start_time to current_time 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+Return true if you want to retry 
+.PP
+If return false, wallhave_get_result will return WALLHAVEN_TOO_MANY_REQUSTS_ERROR 
+.RE
+.PP
+
+.SS "typedef struct Parameters Parameters"
+
+.PP
+All parameters to search images\&. This struct is passed to the wallhaven_search function specifying the parameter
+.PP
+\fRDocumentation of the pararmeters\fP 
+.SS "typedef struct WallhavenAPI WallhavenAPI"
+
+.PP
+Struct for storing the stuffs for doing the API related things\&. Use the wallhaven_init to create get the pointer to this struct\&. Use provided functions to modify the values Don't forget to call the wallhaven_free function at the end\&. 
+.PP
+\fBNote\fP
+.RS 4
+Not supposed to used directly\&. 
+.RE
+.PP
+
+.SH "Enumeration Type Documentation"
+.PP 
+.SS "enum \fBPath\fP"
+
+.PP
+Enum values to specify which path to use\&. These are used passed to the wallhaven_get_result function\&. 
+.PP
+\fBNote\fP
+.RS 4
+It is not recommended to directly use wallhaven_get_result function\&. 
+.PP
+There are macros and functions for doing all the stuffs\&. 
+.RE
+.PP
+
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIWALLPAPER_INFO \fP\fP
+If searching for wallpaper info use this 
+.TP
+\fB\fITAG_INFO \fP\fP
+If searching for tag info use this 
+.TP
+\fB\fISETTINGS \fP\fP
+If accessing the setting use this 
+.TP
+\fB\fISEARCH \fP\fP
+If searching wallpapers use this 
+.TP
+\fB\fICOLLECTIONS \fP\fP
+If searching through collections use this 
+.SS "enum \fBType\fP"
+
+.PP
+Enum for image format type\&. Here JPG and JPEG are equivalent as documentation specifies 
+.SS "enum \fBWallhavenCode\fP"
+
+.PP
+Error codes returned from API functions\&. 
+.PP
+\fBEnumerator\fP
+.in +1c
+.TP
+\fB\fIWALLHAVEN_OK \fP\fP
+No Error 
+.TP
+\fB\fIWALLHAVEN_CURL_FAIL \fP\fP
+Something went wrong with the curl 
+.TP
+\fB\fIWALLHAVEN_NO_API_KEY \fP\fP
+API key was not set, but required 
+.TP
+\fB\fIWALLHAVEN_USING_ID_IN_COMBINATION \fP\fP
+In query id is for exact tag search and cannot be combined (look at the \fRdocumentation\fP) 
+.TP
+\fB\fIWALLHAVEN_UNKNOW_PATH \fP\fP
+The path given to the wallhaven_get_result function is unkown 
+.TP
+\fB\fIWALLHAVEN_UNKOWN_SORTING \fP\fP
+In \fBParameters\fP given value given for sorting is unkown 
+.TP
+\fB\fIWALLHAVEN_UNKOWN_ORDER \fP\fP
+In \fBParameters\fP given value for order is unkown 
+.TP
+\fB\fIWALLHAVEN_UNKOWN_TOPRANGE \fP\fP
+In \fBParameters\fP given value for toprange is unkown 
+.TP
+\fB\fIWALLHAVEN_SORTING_SHOULD_BE_TOPLIST \fP\fP
+To use Top Range, sorting must be TOPLIST (look at the \fRdocumentation\fP) 
+.TP
+\fB\fIWALLHAVEN_TOO_MANY_REQUSTS_ERROR \fP\fP
+Returned when Maximum API call limit is hit and didn't retried to get the content 
+.TP
+\fB\fIWALLHAVEN_UNAUTHORIZED_ERROR \fP\fP
+Returned when API key is not correct or trying to access nsfw wallpapers without API key (\fRdocumentation\fP) 
+.SH "Function Documentation"
+.PP 
+.SS "void wallhaven_apikey (\fBWallhavenAPI\fP * wa, const char * apikey)"
+
+.PP
+Set API key\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to the \fBWallhavenAPI\fP 
+.br
+\fIapikey\fP API key string 
+.RE
+.PP
+
+.SS "void wallhaven_free (\fBWallhavenAPI\fP * wa)"
+
+.PP
+Free allocated memory of \fBWallhavenAPI\fP\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to the \fBWallhavenAPI\fP 
+.RE
+.PP
+
+.SS "\fBWallhavenCode\fP wallhaven_get_result (\fBWallhavenAPI\fP * wa, \fBPath\fP p, const char * id)"
+
+.PP
+Make API call\&. If neither wallhaven_write_to_response nor wallhaven_write_to_file is called before, writes the response to the stdout
+.PP
+\fBNote\fP
+.RS 4
+This function is not supposed to be used directly 
+.PP
+Use the macors and other functions instead
+.RE
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to the \fBWallhavenAPI\fP 
+.br
+\fIp\fP Path to set 
+.br
+\fIid\fP Wallpaper id or tag id or similar things to append after the path 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+WALLHAVEN_OK on success 
+.RE
+.PP
+
+.SS "\fBWallhavenAPI\fP * wallhaven_init ()"
+
+.PP
+initialize \fBWallhavenAPI\fP 
+.PP
+\fBReturns\fP
+.RS 4
+Returns pointer to the \fBWallhavenAPI\fP if successful else returns NULL 
+.RE
+.PP
+
+.SS "\fBWallhavenCode\fP wallhaven_search (\fBWallhavenAPI\fP * wa, \fBParameters\fP * p)"
+
+.PP
+Search for wallpaper\&. Look at \fBParameters\fP, \fBQuery\fP and \fRdocumentation\fP for more details
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to the \fBWallhavenAPI\fP 
+.br
+\fIp\fP Pointer to the \fBParameters\fP 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+WALLHAVEN_OK on success 
+.RE
+.PP
+
+.SS "void wallhaven_set_on_api_call_limit_error (\fBWallhavenAPI\fP * wa, \fBonMaxAPICallLimitError\fP func)"
+
+.PP
+Set function to call on maximum API call limit hit\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to \fBWallhavenAPI\fP 
+.br
+\fIfunc\fP function to call 
+.RE
+.PP
+
+.SS "\fBWallhavenCode\fP wallhaven_wallpapers_of_collections (\fBWallhavenAPI\fP * wa, const char * user, const char * id, int purity)"
+
+.PP
+Wallpapers in the collection of a user\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to the \fBWallhavenAPI\fP 
+.br
+\fIuser\fP Username 
+.br
+\fIid\fP Colleciton id 
+.br
+\fIpurity\fP Purity of images 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+WALLHAVEN_OK on success 
+.RE
+.PP
+
+.SS "\fBWallhavenCode\fP wallhaven_write_to_file (\fBWallhavenAPI\fP * wa, FILE * file)"
+
+.PP
+Write the response of API call to a file\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to the \fBWallhavenAPI\fP 
+.br
+\fIfile\fP File pointer to which have to write the response 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+WALLHAVEN_OK on success 
+.RE
+.PP
+
+.SS "\fBWallhavenCode\fP wallhaven_write_to_response (\fBWallhavenAPI\fP * wa, \fBResponse\fP * response)"
+
+.PP
+Write the response of API call to response\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIwa\fP Pointer to the \fBWallhavenAPI\fP 
+.br
+\fIresponse\fP \fBResponse\fP pointer to which have to write the response 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+WALLHAVEN_OK on success 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for WallhavenAPI from the source code\&.

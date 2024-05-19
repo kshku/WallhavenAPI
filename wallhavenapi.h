@@ -1,4 +1,35 @@
 /**
+ * @file wallhavenapi.h
+ * @author kshku
+ * @brief Header file of WallhavenAPI implementation in C
+ * @version 0.1
+ * @date 2024-05-18
+ *
+ * @copyright MIT License
+
+Copyright (c) 2024 K Shreekrishna Upadhyaya
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ *
+ */
+
+/**
  * @mainpage [Wallhaven](https://wallhaven.cc)'s API implemenntation in C
  * @brief Implemented the wallhaven api for fun
  * @note Read [API documentation](https://wallhaven.cc/help/api) before using
@@ -6,13 +37,19 @@
  */
 
 /**
- * @file wallhavenapi.h
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
- * @date 2024-05-18
+ * @example response.c
+ * @brief Example of using Response
+ */
+
+/**
+ * @example parameters.c
+ * @brief Example of using parametrs
  *
- * @copyright Copyright (c) 2024
+ */
+
+/**
+ * @example default_maclh.c
+ * @brief The default function used when Maximum api call limit hit
  *
  */
 
@@ -139,7 +176,15 @@
 
 /**
  * @brief Type of function to call when hit maximum API call limit
- * @param start_time Pointer to the  time at which the calls to API started
+ *
+ * If no function is given default function is used which waits for completion of one minute from the first API call and then retries.
+ * Look at the default_maclh.c in the examples for the code.
+ * @param start_time Pointer to the  time at which the calls to API started.
+ * @note The start_time is updated as
+ * @code {.c}
+ * if (difftime(time(NULL), start_time) > 60) time(&start_time);
+ * @endcode
+ * @note This just checks whether it's already a minute since the first API call and if it is true it changes the start_time to current_time
  * @return Return true if you want to retry
  * @return If return false, wallhave_get_result will return WALLHAVEN_TOO_MANY_REQUSTS_ERROR
  *
@@ -175,10 +220,6 @@ typedef struct
     char *value; /**< @brief response string */
     size_t size; /**< @brief size of the value */
 } Response;
-/**
- * @example response.c
- * @brief Example of using Response
- */
 
 /**
  * @brief Enum for image format type
@@ -292,59 +333,129 @@ typedef struct Parameters
     int page;          /**< @brief List images in the page number */
     char seed[6 + 1];  /**< @brief Seed for random results */
 } Parameters;
+
 /**
- * @example parameters.c
- * @brief Example of using parametrs
+ * @brief Enum values to specify which path to use
+ *
+ * These are used passed to the wallhaven_get_result function.
+ * @note It is not recommended to directly use wallhaven_get_result function.
+ * @note There are macros and functions for doing all the stuffs.
  *
  */
-
 typedef enum
 {
-    WALLPAPER_INFO,
-    TAG_INFO,
-    SETTINGS,
-    SEARCH,
-    COLLECTIONS,
+    WALLPAPER_INFO, /**< If searching for wallpaper info use this */
+    TAG_INFO,       /**< If searching for tag info use this */
+    SETTINGS,       /**< If accessing the setting use this */
+    SEARCH,         /**< If searching wallpapers use this */
+    COLLECTIONS,    /**< If searching through collections use this */
 } Path;
 
-// Defined in c file
+/**
+ * @brief Struct for storing the stuffs for doing the API related things
+ *
+ * Use the wallhaven_init to create get the pointer to this struct.
+ * Use provided functions to modify the values
+ * Don't forget to call the wallhaven_free function at the end.
+ * @note Not supposed to used directly.
+ *
+ */
 typedef struct WallhavenAPI
 {
-    CURL *curl;
-    CURLU *url;
-    const char *apikey;
-    bool api_key_set;
-    onMaxAPICallLimitError api_call_limit_error;
-    time_t start_time;
+    CURL *curl;                                  /**< @brief The curl easy handle for making api calls */
+    CURLU *url;                                  /**< @brief The curl url to parse and create url */
+    const char *apikey;                          /**< @brief The API key to use for authentication */
+    bool api_key_set;                            /**< @brief Used for internal logic */
+    onMaxAPICallLimitError api_call_limit_error; /**< @brief Funciton to call when maximum api call limit is hit */
+    time_t start_time;                           /**< @brief To keep track of when we started to make api calls. Passed to the api_call_limit_error function */
 } WallhavenAPI;
 
 // Wallhaven api functions
 
-// Initializer function
+/**
+ * @brief initialize WallhavenAPI
+ *
+ * @return Returns pointer to the WallhavenAPI if successful else returns NULL
+ */
 WallhavenAPI *wallhaven_init();
-// Terminator function
+
+/**
+ * @brief Free allocated memory of WallhavenAPI
+ *
+ * @param wa Pointer to the WallhavenAPI
+ */
 void wallhaven_free(WallhavenAPI *wa);
 
-// Provide the api key
+/**
+ * @brief Set API key
+ *
+ * @param wa Pointer to the WallhavenAPI
+ * @param apikey API key string
+ */
 void wallhaven_apikey(WallhavenAPI *wa, const char *apikey);
 
-// Write the result to Response when called wallhaven_get_result
+/**
+ * @brief Write the response of API call to response
+ *
+ * @param wa Pointer to the WallhavenAPI
+ * @param response Response pointer to which have to write the response
+ * @return WALLHAVEN_OK on success
+ */
 WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response);
 
 // Write the result to a file when called wallhaven_get_result
+/**
+ * @brief Write the response of API call to a file
+ *
+ * @param wa Pointer to the WallhavenAPI
+ * @param file File pointer to which have to write the response
+ * @return WALLHAVEN_OK on success
+ */
 WallhavenCode wallhaven_write_to_file(WallhavenAPI *wa, FILE *file);
 
-// Get the result
-// If neither wallhaven_write_to_response nor wallhaven_write_to_file set writes result to stdout
+/**
+ * @brief Make API call
+ *
+ * If neither wallhaven_write_to_response nor wallhaven_write_to_file is called before, writes the response to the stdout
+ *
+ * @note This function is not supposed to be used directly
+ * @note Use the macors and other functions instead
+ *
+ * @param wa Pointer to the WallhavenAPI
+ * @param p Path to set
+ * @param id Wallpaper id or tag id or similar things to append after the path
+ * @return WALLHAVEN_OK on success
+ */
 WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id);
 
-// Search wallpapers
+/**
+ * @brief Search for wallpaper
+ *
+ * Look at Parameters, Query and [documentation](https://wallhaven.cc/help/api#search) for more details
+ *
+ * @param wa Pointer to the WallhavenAPI
+ * @param p Pointer to the Parameters
+ * @return WALLHAVEN_OK on success
+ */
 WallhavenCode wallhaven_search(WallhavenAPI *wa, Parameters *p);
 
-// Get wallpapers in the collection
+/**
+ * @brief Wallpapers in the collection of a user
+ *
+ * @param wa Pointer to the WallhavenAPI
+ * @param user Username
+ * @param id Colleciton id
+ * @param purity Purity of images
+ * @return WALLHAVEN_OK on success
+ */
 WallhavenCode wallhaven_wallpapers_of_collections(WallhavenAPI *wa, const char *user, const char *id, int purity);
 
-// Set function to call on maximum api call limit is hit
+/**
+ * @brief Set function to call on maximum API call limit hit
+ *
+ * @param wa Pointer to WallhavenAPI
+ * @param func function to call
+ */
 void wallhaven_set_on_api_call_limit_error(WallhavenAPI *wa, onMaxAPICallLimitError func);
 
 #endif

@@ -1,0 +1,48 @@
+.TH "Query" 3 "Version 1.0.0" "WallhavenAPI" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Query \- Search query struct\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fR#include <wallhavenapi\&.h>\fP
+.SS "Data Fields"
+
+.in +1c
+.ti -1c
+.RI "char * \fBtags\fP"
+.br
+.RI "Search fuzzily for a tag\&. Can include +tag (include a tag) and -tag (exclude a tag) also\&. "
+.ti -1c
+.RI "char * \fBuser_name\fP"
+.br
+.RI "Name fo the user whose uploads to search for\&. "
+.ti -1c
+.RI "char * \fBid\fP"
+.br
+.RI "Id of the tag to search for the wallpapers having the same tag (cannot be combined) "
+.ti -1c
+.RI "\fBType\fP \fBtype\fP"
+.br
+.RI "Type of the images\&. "
+.ti -1c
+.RI "char * \fBlike\fP"
+.br
+.RI "Id of the wallpaper to find the wallpapers of same kind\&. "
+.in -1c
+.SH "Detailed Description"
+.PP 
+Search query struct\&. 
+
+Struct to store the query values (first value in the \fBParameters\fP list in \fRdocumentation\fP) 
+.PP
+\fBExamples\fP
+.in +1c
+\fBparameters\&.c\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for WallhavenAPI from the source code\&.
