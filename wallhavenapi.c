@@ -45,6 +45,8 @@ static bool default_api_call_limit(time_t *start_time)
     time_t t = time(NULL);
     struct tm *current_time = localtime(&t);
     int wait_time = 60 - difftime(t, *start_time) + 1;
+    if (wait_time > 60)
+        return true;
     printf("Hit max api call limit, waiting for %d seconds before retrying...\n", wait_time);
     sleep_ms(wait_time * 1000);
 
@@ -340,6 +342,9 @@ static WallhavenCode format_page(WallhavenAPI *wa, const int page)
 static WallhavenCode format_seed(WallhavenAPI *wa, const char *seed)
 {
     checkp_return(seed[0], WALLHAVEN_OK);
+#ifdef DEBUG
+    printf("seed length = %d\n", strlen(seed));
+#endif
     check_return(append_query(wa, "seed", seed), WALLHAVEN_CURL_FAIL);
     return WALLHAVEN_OK;
 }
@@ -363,7 +368,6 @@ WallhavenAPI *wallhaven_init()
     check_return(curl_url_set(wa->url, CURLUPART_URL, "https://wallhaven.cc", CURLU_URLENCODE), NULL);
 
     wa->api_call_limit_error = default_api_call_limit;
-    wa->response = NULL;
     wa->api_key_set = false;
     wa->apikey = NULL;
     wa->start_time = -1;
@@ -387,7 +391,6 @@ void wallhaven_apikey(WallhavenAPI *wa, const char *apikey)
 WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response)
 {
     check_return(reset(wa), WALLHAVEN_CURL_FAIL);
-    wa->response = response;
 
     // Write curl output to response
     check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function), WALLHAVEN_CURL_FAIL);
@@ -399,7 +402,6 @@ WallhavenCode wallhaven_write_to_response(WallhavenAPI *wa, Response *response)
 WallhavenCode wallhaven_write_to_file(WallhavenAPI *wa, FILE *file)
 {
     check_return(reset(wa), WALLHAVEN_CURL_FAIL);
-    wa->response = NULL;
 
     // Write curl ouput to a file
     check_return(curl_easy_setopt(wa->curl, CURLOPT_WRITEFUNCTION, write_function_tofile), WALLHAVEN_CURL_FAIL);
@@ -412,13 +414,6 @@ WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id)
 {
     size_t size;
     char *path;
-
-    if (wa->response)
-    {
-        wa->response->size = 0;
-        if (!wa->response->value)
-            wa->response->value = NULL;
-    }
 
     switch (p)
     {
@@ -495,7 +490,7 @@ WallhavenCode wallhaven_get_result(WallhavenAPI *wa, Path p, const char *id)
     return WALLHAVEN_OK;
 }
 
-WallhavenCode wallhaven_search(WallhavenAPI *wa, const Parameters *p)
+WallhavenCode wallhaven_search(WallhavenAPI *wa, Parameters *p)
 {
 #ifdef DEBUG
     printf(
@@ -569,6 +564,9 @@ WallhavenCode wallhaven_search(WallhavenAPI *wa, const Parameters *p)
 
     wc = format_page(wa, p->page);
     check_return(wc, wc);
+
+    // For safety reasons make sure that the seed ends with null character
+    p->seed[6] = 0;
 
     wc = format_seed(wa, p->seed);
     check_return(wc, wc);

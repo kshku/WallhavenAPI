@@ -20,63 +20,63 @@ int main()
     Response response = {0};
     wallhaven_write_to_response(wa, &response);
 
-    wallhaven_my_collections(wa);
-    print_and_reset(&response);
+    /* wallhaven_my_collections(wa);
+     print_and_reset(&response);
 
-    wallhaven_collections_of(wa, "Yukinoshita");
-    print_and_reset(&response);
+     wallhaven_collections_of(wa, "Yukinoshita");
+     print_and_reset(&response);
 
-    // Just hack
-    wallhaven_collections_of(wa, "Yukinoshita/854694");
-    print_and_reset(&response);
+     // Just hack
+     wallhaven_collections_of(wa, "Yukinoshita/854694");
+     print_and_reset(&response);
 
-    wallhaven_wallpapers_of_collections(wa, "Yukinoshita", "854694", 0);
-    print_and_reset(&response);
+     wallhaven_wallpapers_of_collections(wa, "Yukinoshita", "854694", 0);
+     print_and_reset(&response);
 
-    for (int i = 0; i < 50; ++i)
-    {
-        printf("Iteration %d\n", i + 1);
-        wallhaven_wallpaper_info(wa, "3lepy9");
-        print_and_reset(&response);
-    }
+     for (int i = 0; i < 50; ++i)
+     {
+         printf("Iteration %d\n", i + 1);
+         wallhaven_wallpaper_info(wa, "3lepy9");
+         print_and_reset(&response);
+     }
 
-    // Wallpaper info
-    FILE *test = fopen("./test.json", "w");
-    if (!(test))
-        return 1;
-    WallhavenCode c = wallhaven_wallpaper_info(wa, "3lepy9");
-    print_and_reset(&response);
-    wallhaven_write_to_file(wa, test);
-    wallhaven_wallpaper_info(wa, "3lepy9");
-    fclose(test);
+     // Wallpaper info
+     FILE *test = fopen("./test.json", "w");
+     if (!(test))
+         return 1;
+     WallhavenCode c = wallhaven_wallpaper_info(wa, "3lepy9");
+     print_and_reset(&response);
+     wallhaven_write_to_file(wa, test);
+     wallhaven_wallpaper_info(wa, "3lepy9");
+     fclose(test);
 
-    // Tag info
-    FILE *test1 = fopen("./test1.json", "w");
-    if (!(test1))
-        return 2;
-    WallhavenCode ct = wallhaven_tag_info(wa, "77513");
-    print_and_reset(&response);
-    wallhaven_write_to_file(wa, test1);
-    wallhaven_tag_info(wa, "77513");
-    fclose(test1);
+     // Tag info
+     FILE *test1 = fopen("./test1.json", "w");
+     if (!(test1))
+         return 2;
+     WallhavenCode ct = wallhaven_tag_info(wa, "77513");
+     print_and_reset(&response);
+     wallhaven_write_to_file(wa, test1);
+     wallhaven_tag_info(wa, "77513");
+     fclose(test1);
 
-    // User settings
-    FILE *test2 = fopen("./test2.json", "w");
-    if (!(test2))
-        return 3;
-    WallhavenCode cs = wallhaven_user_settings(wa);
-    if (cs == WALLHAVEN_OK)
-    {
-        print_and_reset(&response);
-        wallhaven_write_to_file(wa, test2);
-        wallhaven_user_settings(wa);
-    }
-    else
-    {
-        printf("No API key is provided\n");
-    }
-    fclose(test2);
-
+     // User settings
+     FILE *test2 = fopen("./test2.json", "w");
+     if (!(test2))
+         return 3;
+     WallhavenCode cs = wallhaven_user_settings(wa);
+     if (cs == WALLHAVEN_OK)
+     {
+         print_and_reset(&response);
+         wallhaven_write_to_file(wa, test2);
+         wallhaven_user_settings(wa);
+     }
+     else
+     {
+         printf("No API key is provided\n");
+     }
+     fclose(test2);
+ */
     // Search
     Parameters p = (Parameters){
         .q = &(Query){
@@ -97,7 +97,7 @@ int main()
         // .ratios = "9x16,10x16",
         // .colors = Rosewood "," GreenLeaf, // Don't want to paste all possibe values here :)
         // .page = 100,
-        // .seed = "azAZ09"
+        .seed = "azAZ09a",
     };
 
     FILE *test3 = fopen("./test3.json", "w");
